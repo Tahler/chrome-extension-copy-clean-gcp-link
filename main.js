@@ -9,11 +9,15 @@ chrome.commands.onCommand.addListener(async (command) => {
   }
 
   const raw = new URL(tab.url);
-  let base = raw.origin + raw.pathname;
-  const project = raw.searchParams.get("project");
-  if (project) {
-    base += "?project=" + project;
+  let url = raw.origin + raw.pathname;
+  const toRemove = ["inv", "invt", "referrer"];
+  for (const param of toRemove) {
+    raw.searchParams.delete(param);
   }
+  if (raw.searchParams.size > 0) {
+    url += "?" + raw.searchParams.toString();
+  }
+  url += raw.hash;
 
   await chrome.scripting.executeScript({
     target: { tabId: tab.id },
@@ -36,6 +40,6 @@ chrome.commands.onCommand.addListener(async (command) => {
         setTimeout(() => div.remove(), 2000);
       });
     },
-    args: [base],
+    args: [url],
   });
 });
